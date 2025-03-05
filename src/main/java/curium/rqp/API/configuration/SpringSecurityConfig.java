@@ -21,11 +21,13 @@ public class SpringSecurityConfig {
 		http
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/api/**").permitAll()
 						.anyRequest().authenticated()
 				)
-				.formLogin(login -> login.defaultSuccessUrl("http://localhost:4200/Accueil", true))
+				.formLogin(login -> login.defaultSuccessUrl("http://localhost:4200/login", true))
 				.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login"))
-				.csrf(csrf -> csrf.disable());
+				.csrf(csrf -> csrf.disable())
+				.cors(cors -> cors.configure(http));
 
 
 		return http.build();
