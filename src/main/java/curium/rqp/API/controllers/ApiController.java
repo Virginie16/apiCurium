@@ -1,20 +1,26 @@
 package curium.rqp.API.controllers;
 
+import curium.rqp.API.dto.LoginDto;
 import curium.rqp.API.models.Biocharge;
 import curium.rqp.API.models.ChangeControl;
 import curium.rqp.API.services.BiochargeService;
 import curium.rqp.API.services.ChangeControlService;
 import curium.rqp.API.services.ProduitService;
 import curium.rqp.API.services.SiteService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -23,6 +29,8 @@ public class ApiController {
 	private ProduitService produitService;
 	private BiochargeService biochargeService;
 	private ChangeControlService changeControlService;
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	@Autowired
 	public ApiController(SiteService siteService, ProduitService produitService, BiochargeService biochargeService, ChangeControlService changeControlService) {
@@ -31,6 +39,16 @@ public class ApiController {
 		this.biochargeService = biochargeService;
 		this.changeControlService = changeControlService;
 	}
+
+	@PostMapping("/login")
+	public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto){
+		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+				loginDto.getUsername(), loginDto.getPassword()));
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
+	}
+
 //	@GetMapping("/selection")
 //	public String showSelectionPage() {
 //		return "selection"; // Doit correspondre au nom du fichier Thymeleaf (selection.html)
@@ -39,7 +57,8 @@ public class ApiController {
 	public ResponseEntity<List<String>> getSites() {
 		return ResponseEntity.ok(siteService.getAllSites());
 	}
-	@CrossOrigin("http://localhost:4200")
+
+	@CrossOrigin
 	@GetMapping("/produits")
 	public ResponseEntity<List<String>> getProduits() {
 		return ResponseEntity.ok(produitService.findAll());
